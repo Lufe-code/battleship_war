@@ -23,3 +23,15 @@
 │── package.json          # (Opcional) Si usas npm para gestionar dependencias
 │── README.md             # Documentación del proyecto
 
+…or create a new repository on the command line
+echo "# battleship_war" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/Lufe-code/battleship_war.git
+git push -u origin main
+…or push an existing repository from the command line
+git remote add origin https://github.com/Lufe-code/battleship_war.git
+git branch -M main
+git push -u origin main
