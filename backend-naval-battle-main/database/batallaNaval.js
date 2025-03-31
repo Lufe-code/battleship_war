@@ -276,3 +276,4 @@ function resetearJuego() {
     alert("El juego ha terminado.");
     document.location.reload();
 }
+
