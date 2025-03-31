@@ -1,16 +1,125 @@
+let totalBarcos=4;
+
+let tamañoTablero = 10;
+let barcosDisponibles = [
+    { tipo: 'portaaviones', tamaño: 4 },
+    { tipo: 'submarino', tamaño: 3 },
+    { tipo: 'destructor', tamaño: 2 },
+    { tipo: 'lancha', tamaño: 1 }
+];
+let barcoSeleccionado = null;
 let jugadores = {
     jugador1: { nombre: "", tablero: [], barcosColocados: 0, turno: true, puntuacion: 0, disparosRealizados: [], barcos: [] },
     jugador2: { nombre: "", tablero: [], barcosColocados: 0, turno: false, puntuacion: 0, disparosRealizados: [], barcos: [] }
 };
-let tamañoTablero;
-let jugadorTurno = 1;  // 1 para Jugador 1, 2 para Jugador 2
-let totalBarcos = 5;   // Número de barcos por jugador
+let jugadorTurno = 1;  // Jugador 1 comienza
 
-// Barcos con puntajes distintos
-const puntajesBarcos = [1, 2, 3, 4, 5];  // El primer barco vale 1, el segundo 2, y así sucesivamente
+document.addEventListener("DOMContentLoaded", function() {
+    crearTablero(jugadorTurno);
+    mostrarBarcosDisponibles();
+});
+
+function mostrarBarcosDisponibles() {
+    let contenedor = document.getElementById("barcos");
+    contenedor.innerHTML = "";
+    barcosDisponibles.forEach(barco => {
+        let boton = document.createElement("button");
+        boton.innerText = barco.tipo;
+        boton.onclick = () => seleccionarBarco(barco);
+        contenedor.appendChild(boton);
+    });
+}
+
+function seleccionarBarco(barco) {
+    barcoSeleccionado = barco;
+    alert(`Has seleccionado el ${barco.tipo}`);
+}
+
+function crearTablero(jugadorNum) {
+    let contenedor = document.getElementById("tablero");
+    let tabla = document.createElement("table");
+    for (let i = 0; i < tamañoTablero; i++) {
+        let fila = document.createElement("tr");
+        for (let j = 0; j < tamañoTablero; j++) {
+            let celda = document.createElement("td");
+            celda.id = `${jugadorNum}-${i},${j}`; // ID único por jugador
+            celda.onclick = () => colocarBarco(jugadorNum, i, j);
+            if (jugadores[`jugador${jugadorNum}`].tablero[i][j] === 1) {
+                celda.classList.add("barco");
+            }
+            fila.appendChild(celda);
+        }
+        tabla.appendChild(fila);
+    }
+    contenedor.innerHTML = "";
+    contenedor.appendChild(tabla);
+}
+
+function colocarBarco(jugadorNum, i, j) {
+    let jugador = jugadores.jugador2;
+    let barcosColocados = 0;
+
+    
+  
+   
+   
+    if (!barcoSeleccionado) {
+        alert("Selecciona un barco primero");
+        return;
+    }
+
+    let tamaño = barcoSeleccionado.tamaño;
+    if (j + tamaño > tamañoTablero) {
+        alert("El barco no cabe aquí");
+        return;
+    }
+
+    for (let k = 0; k < tamaño; k++) {
+        if (jugadores[`jugador${jugadorNum}`].tablero[i][j + k] === 1) {
+            alert("No puedes colocar un barco encima de otro");
+            return;
+        }
+    }
+
+    for (let k = 0; k < tamaño; k++) {
+        jugadores[`jugador${jugadorNum}`].tablero[i][j + k] = 1;
+       
+        barcosColocados++;
+    }
+
+    jugadores[`jugador${jugadorNum}`].barcosColocados++;  // Incrementar el contador de barcos colocados
+    
+    // Verificar si todos los barcos han sido colocados
+    if (jugadores[`jugador${jugadorNum}`].barcosColocados === barcosDisponibles.length) {
+        if (jugadorNum === 1) {
+            // Si es el turno del jugador 1, pasa al jugador 2
+            jugadorTurno = 2;
+            
+            
+         alert("Jugador 1 ha terminado de colocar sus barcos. Ahora es el turno de Jugador 2");
+            crearTablero(jugadorTurno);
+            colocarBarcosAutomaticamente();
+        actualizarTablero(2);
+        actualizarTablero(1);
+        
+        } if (jugadores.jugador1.barcosColocados >= totalBarcos && jugadores.jugador2.barcosColocados < totalBarcos){
+            // Si es el turno del jugador 2, iniciar el juego
+            alert("Ambos jugadores han colocado sus barcos. ¡El juego empieza!");
+            
+        }
+    }
+    
+    barcoSeleccionado = null;
+}
 
 // Función para iniciar el juego
 function iniciarJuego() {
+    document.getElementById("tableros").style.display = "none";
+    document.getElementById("turnoJugador").style.display = "block";
+    document.getElementById("jugadorTurnoNombre").innerText = jugadores[`jugador${jugadorTurno}`].nombre;
+
+    
+    
     const nombre1 = document.getElementById("nombreJugador1").value;
     const nombre2 = document.getElementById("nombreJugador2").value;
     tamañoTablero = parseInt(document.getElementById("tamanoTablero").value);
@@ -22,7 +131,7 @@ function iniciarJuego() {
 
     jugadores.jugador1.nombre = nombre1;
     jugadores.jugador2.nombre = nombre2;
-
+    confirmarSeleccionBarco();
     // Ocultar pantalla inicial y mostrar la pantalla de colocación de barcos
     document.getElementById("inicio").style.display = "none";
     document.getElementById("tableros").style.display = "block";
@@ -33,9 +142,17 @@ function iniciarJuego() {
     // Crear tableros vacíos para los jugadores
     crearTablero(1);  // Tablero para el Jugador 1
     crearTablero(2);  // Tablero para el Jugador 2 (invisible al principio)
-    document.getElementById("tableroJugador2").style.display = "none"; // Esconde el tablero de jugador 2
+    document.getElementById("tableroJugador2").style.display="none" ; // Esconde el tablero de jugador 2
 }
-
+function confirmarSeleccionBarco() {
+    tipoBarcoSeleccionado = document.getElementById("tipoBarco").value;
+    document.getElementById("seleccionBarcos").style.display = "none";
+    document.getElementById("tableros").style.display = "block";
+    document.getElementById("jugadorNombre").innerText = jugadores.jugador1.nombre;
+    crearTablero(1);
+    crearTablero(2);
+    document.getElementById("tableroJugador2").style.display = "none";
+}
 // Función para crear tablero vacío
 function crearTablero(jugadorNum) {
     let jugador = jugadores[`jugador${jugadorNum}`];
@@ -66,59 +183,43 @@ function crearTablero(jugadorNum) {
     }
 }
 
-// Función para colocar un barco
-function colocarBarco(jugadorNum, i, j) {
-    let jugador = jugadores[`jugador${jugadorNum}`];
 
-    if (jugador.tablero[i][j] === 0 && jugador.barcosColocados < totalBarcos) {
-        jugador.tablero[i][j] = 1;  // Colocar el barco
-        let puntajeBarco = puntajesBarcos[jugador.barcosColocados];
-        jugador.barcos.push({ i, j, puntaje: puntajeBarco });
-        jugador.barcosColocados++;
-
-        actualizarTablero(jugadorNum);
-
-        if (jugador.barcosColocados >= totalBarcos) {
-            alert(`${jugador.nombre} ha colocado todos sus barcos!`);
-
-            if (jugadorNum === 1) {
-                // En lugar de mostrar el tablero del jugador 2, colocamos sus barcos automáticamente
-                colocarBarcosAutomaticamente();
-                finalizarColocacion();
-            } else {
-                finalizarColocacion();  // Llama a la función que finaliza la colocación de barcos
-            }
-        }
-        if (jugadores.jugador1.barcosColocados >= totalBarcos && jugadores.jugador2.barcosColocados >= totalBarcos) {
-            document.getElementById("tableros").style.display = "none";
-            document.getElementById("turnoJugador").style.display = "block";
-            document.getElementById("jugadorTurnoNombre").innerText = jugadores.jugador1.nombre;
-            actualizarPuntajes();  
-            crearTableroDisparo(1);  
-        }
-    
-    }
-}
-// Función para que el Jugador 2 coloque barcos automáticamente
+// Colocación automática de barcos para el jugador 2
 function colocarBarcosAutomaticamente() {
     let jugador = jugadores.jugador2;
     let barcosColocados = 0;
 
-    while (barcosColocados < totalBarcos) {
-        let i = Math.floor(Math.random() * tamañoTablero);
-        let j = Math.floor(Math.random() * tamañoTablero);
+    while (barcosColocados < barcosDisponibles.length) {
+        let barco = barcosDisponibles[barcosColocados];
+        let colocado = false;
 
-        // Verificar si la celda está vacía y que las celdas adyacentes también estén vacías
-        if (jugador.tablero[i][j] === 0 && esPosicionValida(jugador, i, j)) {
-            jugador.tablero[i][j] = 1;
-            let puntajeBarco = puntajesBarcos[barcosColocados];
-            jugador.barcos.push({ i, j, puntaje: puntajeBarco });
-            barcosColocados++;
+        while (!colocado) {
+            let i = Math.floor(Math.random() * tamañoTablero);
+            let j = Math.floor(Math.random() * (tamañoTablero - barco.tamaño));
+
+            // Verificar si el barco cabe en la posición y no se solapan con otros barcos
+            let puedeColocar = true;
+            for (let k = 0; k < barco.tamaño; k++) {
+                if (jugador.tablero[i][j + k] === 1) {
+                    puedeColocar = false;
+                    break;
+                }
+            }
+
+            if (puedeColocar) {
+                // Colocar el barco en la posición seleccionada
+                for (let k = 0; k < barco.tamaño; k++) {
+                    jugador.tablero[i][j + k] = 1;
+                    // Asegúrate de colocar la celda correspondiente en el tablero visual del jugador 2
+                    document.getElementById(`2-${i},${j + k}`).classList.add("barco");
+                }
+                barcosColocados++;
+                colocado = true;
+            }
         }
     }
-    actualizarTablero(2);
-    alert(`${jugador.nombre} ha colocado sus barcos automáticamente!`);
 }
+
 
 function esPosicionValida(jugador, i, j) {
     // Comprobar las celdas adyacentes: arriba, abajo, izquierda, derecha, y diagonales
@@ -167,7 +268,7 @@ function finalizarColocacion() {
     }
     // Iniciar fase de disparos si ambos jugadores han colocado barcos
     if (jugadores.jugador1.barcosColocados >= totalBarcos && jugadores.jugador2.barcosColocados >= totalBarcos) {
-        document.getElementById("tableros").style.display = "none";
+       document.getElementById("tableros").style.display ="none";
         document.getElementById("turnoJugador").style.display = "block";
         document.getElementById("jugadorTurnoNombre").innerText = jugadores.jugador1.nombre;
         actualizarPuntajes();  
@@ -276,4 +377,3 @@ function resetearJuego() {
     alert("El juego ha terminado.");
     document.location.reload();
 }
-
